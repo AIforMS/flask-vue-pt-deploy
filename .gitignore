@@ -1,0 +1,7 @@
+# Project exclude paths
+/node_modules/
+/LICENSE
+/venv/
+/server/.flaskenv
+/server/add_user2db.py
+/dist/
