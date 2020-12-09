@@ -15,11 +15,12 @@
             <router-link to="/" class="nav-link">首页<span class="sr-only">(current)</span></router-link>
           </li>
           <li class="nav-item">
-            <label for="select" class="control-label nav-link disabled">工具箱: </label>
+            <label for="select" class="control-label nav-link disabled"></label>
           </li>
           <li class="nav-item">
             <!-- <a class="nav-link disabled" href="#">工具箱</a> -->
-            <select class="selectpicker form-control" id="select" title="工具箱">
+            <select class="selectpicker form-control" id="select">
+                <option value="null" disabled selected hidden>工具箱</option>
                 <option value="seg">分割</option>
                 <option value="reg">配准</option>
                 <option value="fus">融合</option>
