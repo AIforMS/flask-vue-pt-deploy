@@ -1,8 +1,11 @@
 import os
+import shutil
 import base64
 import numpy as np
 import nibabel as nib
 from PIL import Image
+
+# from config import basedir
 
 
 def nii_to_png(src, dst):
@@ -17,9 +20,11 @@ def nii_to_png(src, dst):
 
 	nib_img = nib.load(src)
 	affine = nib_img.affine
+	print(nib_img.shape)
 
 	np_img = np.asarray(nib_img.dataobj)
-	save_img = Image.fromarray(np.uint8(np_img))
+	print(np_img[:,:,0].shape)
+	save_img = Image.fromarray(np.uint8(np_img[:, :, 0]))
 	save_img.save(dst)
     
 	try:
@@ -48,3 +53,14 @@ def get_score(out_path):
       :fakeDice: 银dice
     """
     return 1, 2, 3
+
+
+if __name__ == '__main__':
+	basedir = r'D:/code_sources/from_github/Flask-Vue-Deploy/server'
+	src = os.path.join(basedir, 'seg_net/input/Pancreas_001_0000.nii.gz')
+	dst = os.path.join(basedir, 'seg_net/upload/aa.png')
+	# upload_path = os.path.join(basedir, 'seg_net/upload')
+	# if os.path.exists(dst):
+	# 	shutil.rmtree(dst)
+	# os.mkdir(dst)
+	# print(nii_to_png(src, dst))

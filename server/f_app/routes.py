@@ -5,6 +5,7 @@ from __future__ import print_function
 # coding=utf-8
 
 import os
+import shutil
 import base64
 import re
 
@@ -23,7 +24,9 @@ from f_app import app, db
 from f_app.user_model import Userr
 from f_app.utils import get_seg, get_score, nii_to_png
 from f_app.auth import basic_auth, token_auth
+
 from config import basedir
+upload_path = os.path.join(basedir, 'seg_net/upload')
 
 
 @app.route('/', methods=['GET'])
@@ -51,21 +54,27 @@ def revoke_token():
 
 @app.route('/uploader', methods = ['GET', 'POST'])
 def uploader():
-   if request.method == 'POST':
-      f = request.files['file']
-      print(f)
-      fileName1 = secure_filename(f.filename)
-      f.save(os.path.join(app.config['UPLOAD_FOLDER'], fileName1))
 
-      sessionId = request.form['id']
-      fileName = request.form['fileName']
-      fileType = request.form['fileType']
+    if os.path.exists(upload_path):
+        shutil.rmtree(upload_path)
+    os.mkdir(upload_path)
 
-      src = os.path.join(basedir, f"seg_net/upload/{fileName1}")
-      dst = os.path.join(basedir, f"seg_net/ouput/{sessionId}.png")
-      print(src, dst)
-      
-      return nii_to_png(src, dst)
+    if request.method == 'POST':
+        f = request.files['file']
+        print(f)
+        fileName1 = secure_filename(f.filename)
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], fileName1))
+
+        sessionId = request.form['id']
+        fileName = request.form['fileName']
+        fileType = request.form['fileType']
+
+        src = os.path.join(upload_path, fileName1)
+        dst = os.path.join(upload_path, f"{sessionId}.png")
+        print(src, dst)
+        
+        return nii_to_png(src, dst)
+    return ''
 
 
 @app.route('/seg', methods=['GET', 'POST'])
