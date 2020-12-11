@@ -311,8 +311,6 @@ export default {
       this.userContent = true;
     },
 
-
-
     setUserStyleSrc(data) {
       this.userStyleSrc = data;
       this.userStyle = true;
