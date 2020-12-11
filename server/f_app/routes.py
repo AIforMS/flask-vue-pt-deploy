@@ -15,14 +15,15 @@ from PIL import Image
 
 # Flask utils
 from flask import request, jsonify, redirect, url_for, g
-from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
 from gevent.pywsgi import WSGIServer
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from f_app import app, db
 from f_app.user_model import Userr
-from f_app.utils import get_seg, get_score
+from f_app.utils import get_seg, get_score, nii_to_png
 from f_app.auth import basic_auth, token_auth
+from config import basedir
 
 
 @app.route('/', methods=['GET'])
@@ -46,6 +47,25 @@ def revoke_token():
     g.current_user.revoke_token()
     db.session.commit()
     return '', 204
+
+
+@app.route('/uploader', methods = ['GET', 'POST'])
+def uploader():
+   if request.method == 'POST':
+      f = request.files['file']
+      print(f)
+      fileName1 = secure_filename(f.filename)
+      f.save(os.path.join(app.config['UPLOAD_FOLDER'], fileName1))
+
+      sessionId = request.form['id']
+      fileName = request.form['fileName']
+      fileType = request.form['fileType']
+
+      src = os.path.join(basedir, f"seg_net/upload/{fileName1}")
+      dst = os.path.join(basedir, f"seg_net/ouput/{sessionId}.png")
+      print(src, dst)
+      
+      return nii_to_png(src, dst)
 
 
 @app.route('/seg', methods=['GET', 'POST'])

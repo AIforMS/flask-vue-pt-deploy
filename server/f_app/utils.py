@@ -1,7 +1,33 @@
 import os
 import base64
-import nibabel as nib
 import numpy as np
+import nibabel as nib
+from PIL import Image
+
+
+def nii_to_png(src, dst):
+	"""
+	将 nii 图片转成 png 并返回 base64 编码，以便前端展示源图
+	src: 源图像完整路径
+	dst: 目标 png 图像的存放的完整路径
+
+	return:
+	png 图像的 base64 编码
+	"""
+
+	nib_img = nib.load(src)
+	affine = nib_img.affine
+
+	np_img = np.asarray(nib_img.dataobj)
+	save_img = Image.fromarray(np.uint8(np_img))
+	save_img.save(dst)
+    
+	try:
+		with open(dst, 'rb') as f:
+			return u"data:image/png;base64," + base64.b64encode(f.read()).decode('ascii')
+	except Exception as e:
+		print(str(e))
+		return "Encode to base64 failed"
 
 
 def get_seg(content_path, out_path, *args):

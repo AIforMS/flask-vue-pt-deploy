@@ -15,7 +15,7 @@
               enctype="multipart/form-data">
           <label for="imageUpload"
                  class="btn">
-            选择文件
+            选择文件并提交
           </label>
           <input type="file"
                  name="file"
@@ -114,15 +114,12 @@ import axios from "axios";
 import Vue from "vue";
 
 
-// const axiosPix =
-//   process.env.NODE_ENV === "development"
-//     ? axios.create({ baseURL: "http://localhost:5001" })
-//     : axios.create({ baseURL: "http://localhost:5001" });
-
 const axiosStyle =
   process.env.NODE_ENV === "development"
     ? axios.create({ baseURL: "http://localhost:5002" })
     : axios.create({ baseURL: "http://localhost:5002" });
+
+const axiosDtype = axios.create({ baseURL: "http://localhost:5002" })
 
 export default {
   name: "LandingPage",
@@ -147,6 +144,8 @@ export default {
       //   { id: "9", src: require("@/assets/thumbs/9.jpg") }
       // ],
       sessionId: "",
+      fileName: "",
+      fileType: "",
 
       labelArea: 2,
       labelCoverage: 0.46,
@@ -215,6 +214,8 @@ export default {
       var styleData = new FormData();
 
       styleData.append("id", this.sessionId);
+      styleData.append("fileName", this.fileName);
+      styleData.append("fileType", this.fileType)
       styleData.append("contentData", src);
       styleData.append("userContent", this.userContent);
 
@@ -246,76 +247,71 @@ export default {
       }
     },
 
-    // toggleReality() {
-    //   this.highReality = !this.highReality;
-    // },
-
-    // toggleQuality() {
-    //   this.highQuality = !this.highQuality;
-    // },
-
-    // toggleResult() {
-    //   this.showStyle = !this.showStyle;
-    //   if (this.showStyle) {
-    //     this.resultSrc = this.resultStyle;
-    //   } else {
-    //     this.resultSrc = this.resultPix;
-    //   }
-    // },
-
     contentUpload(e) {
       var files = e.target.files || e.dataTransfer.files;
       if (!files.length) return;
+      console.log(files)
+      console.log(files[0])
+
+      const imgList = ['png', 'jpg', 'jpeg']
+      const niiList = ['nii', 'nii.gz', 'gz']
+
+      var fileName = files[0]['name']
+      var fileArr = fileName.split('.')
+      var fileEnds = fileArr[fileArr.length - 1].toLocaleLowerCase()
+      if(imgList.find(item => item  === fileEnds)) {
+        this.fileType = 'img'
+      } else {
+        this.fileType = 'nii'
+      }
+      this.fileName = fileArr[0]
+      
+      console.log(this.fileName)
+      console.log(this.fileType)
 
       var reader = new FileReader();
+      var uploadData = new FormData()
 
-      reader.onload = e => {
-        var canvas = document.querySelector("#canvas");
-        var ctx = canvas.getContext("2d");
+      uploadData.append("file", files[0])
+      uploadData.append("fileName", this.fileName)
+      uploadData.append("fileType", this.fileType)
+      uploadData.append("id", this.sessionId)
 
-        var w = canvas.width;
-        var h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+      var canvas = document.querySelector("#canvas");
+      var ctx = canvas.getContext("2d");
 
-        var img = new Image();
-        img.onload = function() {
-          ctx.drawImage(img, 0, 0, w, h);
-        };
-        img.src = e.target.result;
+      var w = canvas.width;
+      var h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      var img = new Image();
+      img.onload = function() {
+        ctx.drawImage(img, 0, 0, w, h);
       };
-      reader.readAsDataURL(files[0]);  // base64编码
-      e.target.value = "";
+
+      if(this.fileType === 'img') {
+        reader.onload = e => {
+          img.src = e.target.result;  // 前端处理的图片的base64编码
+        };
+        reader.readAsDataURL(files[0]);  // base64编码
+        e.target.value = "";
+      } else {
+        axiosDtype({
+          url: "/uploader",
+          method: "POST",
+          data: uploadData,
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }).then(response => {
+          img.src = response.data;  // 后端上传的图片的 base64 编码
+          // this.resultSrc = this.resultStyle;
+        });
+      }
       this.userContent = true;
     },
 
-    // styleUpload(e) {
-    //   var files = e.target.files || e.dataTransfer.files;
-    //   if (!files.length) return;
 
-    //   var reader = new FileReader();
-    //   var vm = this;
-
-    //   reader.onload = e => {
-    //     var canvas = document.createElement("canvas");
-    //     var ctx = canvas.getContext("2d");
-    //     var imgSize = 256;
-    //     var image = new Image();
-
-    //     canvas.width = imgSize;
-    //     canvas.height = imgSize;
-
-    //     var imgData;
-
-    //     image.onload = function() {
-    //       ctx.drawImage(image, 0, 0, imgSize, imgSize);
-    //       let imgData = canvas.toDataURL("image/png");
-    //       vm.setUserStyleSrc(imgData);
-    //     };
-    //     image.src = e.target.result;
-    //   };
-    //   reader.readAsDataURL(files[0]);
-    //   e.target.value = "";
-    // },
 
     setUserStyleSrc(data) {
       this.userStyleSrc = data;
@@ -347,7 +343,7 @@ export default {
 
 .section {
   margin: 0.5rem 1rem;
-  flex-grow: 3;
+  flex-grow: 1;
   width: 40%;
 }
 
