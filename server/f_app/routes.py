@@ -94,13 +94,13 @@ def seg():
     # os.mkdir(submit_path)
 
     resp = {}  # 返回前端的json数据
-    
+
     if request.method == 'POST':
         sessionId = request.form['id']  # front-end session id
         userContent = request.form['userContent']  # bool
         contentData = request.form['contentData']  # img data base64 src, if nii, none
         fileType = request.form['fileType']  # img or nii
-        fileNmae = request.form['fileName']
+        fileName = request.form['fileName']
 
         if fileType == 'nii':
             nii_src = os.path.join(submit_path, fileName)
@@ -111,8 +111,8 @@ def seg():
             imgContent.save(contentPath)
             nii_src = png_to_nii(contentPath, os.path.join(submit_path, fileName))
 
-        seg_out = os.path.join(result_path, sessionId, '.png')  # 仍需判断分割结果是 nii 还是 png 格式
-        get_seg(nii_src, seg_out, *agrs)  # 分割结果保存在 seg_out
+        out_path = os.path.join(result_path, f'{sessionId}.png')  # 仍需判断分割结果是 nii 还是 png 格式
+        seg_out = get_seg(nii_src, out_path)  # 分割结果保存在 seg_out
 
         labelArea, labelCoverage, fakeDice = get_score(seg_out)
 

@@ -62,7 +62,7 @@ def get_seg(content_path, out_path, *args):
     return:
       直接保存分割标签到文件夹，读取后base64编码再发送到前端
     """
-    return ''
+    return r'D:\code_sources\from_github\Flask-Vue-Deploy\server\seg_net\output\Pancreas_002_0000.nii.gz.png'
 
 
 def get_score(out_path):
