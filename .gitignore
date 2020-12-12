@@ -4,3 +4,7 @@
 /venv/
 /server/add_user2db.py
 /dist/
+/server/seg_net/input/
+/server/seg_net/models/
+/server/seg_net/output/
+/server/seg_net/upload/

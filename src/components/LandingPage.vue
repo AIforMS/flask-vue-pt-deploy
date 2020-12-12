@@ -215,8 +215,12 @@ export default {
 
       styleData.append("id", this.sessionId);
       styleData.append("fileName", this.fileName);
-      styleData.append("fileType", this.fileType)
-      styleData.append("contentData", src);
+      styleData.append("fileType", this.fileType);
+      if(this.fileType === 'img') {
+        styleData.append("contentData", src);  // png need to be upload
+      } else {
+        styleData.append("contentData", 'nii');
+      }
       styleData.append("userContent", this.userContent);
 
       // Use custom image

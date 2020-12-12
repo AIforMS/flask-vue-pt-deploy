@@ -22,11 +22,14 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from f_app import app, db
 from f_app.user_model import Userr
-from f_app.utils import get_seg, get_score, nii_to_png
+from f_app.utils import get_seg, get_score, nii_to_png, png_to_nii
 from f_app.auth import basic_auth, token_auth
 
 from config import basedir
-upload_path = os.path.join(basedir, 'seg_net/upload')
+
+upload_path = app.config['UPLOAD_FOLDER']
+submit_path = app.config['SUBMIT_FOLDER']
+result_path = app.config['RESULT_FOLDER']
 
 
 @app.route('/', methods=['GET'])
@@ -54,24 +57,29 @@ def revoke_token():
 
 @app.route('/uploader', methods = ['GET', 'POST'])
 def uploader():
+    """
+    用于前端上传二维nii图片的可视化
+    save: nii
+    return: img base64 encode
+    """
 
     if os.path.exists(upload_path):
-        shutil.rmtree(upload_path)
+        shutil.rmtree(upload_path)  # upload
     os.mkdir(upload_path)
+
+    if os.path.exists(submit_path):
+        shutil.rmtree(submit_path)  # input
+    os.mkdir(submit_path)
 
     if request.method == 'POST':
         f = request.files['file']
-        print(f)
-        fileName1 = secure_filename(f.filename)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], fileName1))
+        # print(f)
+        fileName = secure_filename(f.filename)
+        f.save(os.path.join(submit_path, fileName))
+        print(f'{fileName} saved to {submit_path}')
 
-        sessionId = request.form['id']
-        fileName = request.form['fileName']
-        fileType = request.form['fileType']
-
-        src = os.path.join(upload_path, fileName1)
-        dst = os.path.join(upload_path, f"{sessionId}.png")
-        print(src, dst)
+        src = os.path.join(submit_path, fileName)
+        dst = os.path.join(upload_path, f"{fileName}.png")
         
         return nii_to_png(src, dst)
     return ''
@@ -80,18 +88,31 @@ def uploader():
 @app.route('/seg', methods=['GET', 'POST'])
 # @login_required
 def seg():
+
+    # if os.path.exists(submit_path):
+    #     shutil.rmtree(submit_path)  # input
+    # os.mkdir(submit_path)
+
     resp = {}  # 返回前端的json数据
+    
     if request.method == 'POST':
         sessionId = request.form['id']  # front-end session id
-
         userContent = request.form['userContent']  # bool
-        contentData = request.form['contentData']  # img data src
+        contentData = request.form['contentData']  # img data base64 src, if nii, none
+        fileType = request.form['fileType']  # img or nii
+        fileNmae = request.form['fileName']
 
-        content_path = './output/contents/'+sessionId+'.png'
-        # seg_out = './output/stylized/'+sessionId+'.png'
-        seg_out = './output/in1.jpg'
+        if fileType == 'nii':
+            nii_src = os.path.join(submit_path, fileName)
+        else:
+            contentPath = os.path.join(upload_path, sessionId, '.png')
+            imgData = re.sub('^data:image/.+;base64,', '', contentData)
+            imgContent = Image.open(BytesIO(base64.b64decode(imgData)))
+            imgContent.save(contentPath)
+            nii_src = png_to_nii(contentPath, os.path.join(submit_path, fileName))
 
-        get_seg(content_path, out_path, *agrs)
+        seg_out = os.path.join(result_path, sessionId, '.png')  # 仍需判断分割结果是 nii 还是 png 格式
+        get_seg(nii_src, seg_out, *agrs)  # 分割结果保存在 seg_out
 
         labelArea, labelCoverage, fakeDice = get_score(seg_out)
 
