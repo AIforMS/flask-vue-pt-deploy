@@ -22,9 +22,9 @@
             <select class="selectpicker form-control" id="select">
                 <option value="null" disabled selected hidden>工具箱</option>
                 <option value="seg">分割</option>
-                <option value="reg">配准</option>
+                <!-- <option value="reg">配准</option>
                 <option value="fus">融合</option>
-                <option value="cla">分类</option>
+                <option value="cla">分类</option> -->
             </select>
             <!-- 把分割、配准、融合、分类都放在这里，作为选项 -->
           </li>

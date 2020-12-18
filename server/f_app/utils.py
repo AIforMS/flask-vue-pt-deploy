@@ -45,7 +45,7 @@ def png_to_nii(src, dst):
     np_img = np.asarray(Image.open(src))
     print(np_img.shape)
     # np_img = np.rot90(np_img, 2)  # 取值一般为1、2、3，分别表示旋转90度、180度、270度；k也可以取负数，-1、-2、-3。k取正数表示逆时针旋转，取负数表示顺时针旋转。
-    np_img = np.mean(np_img, axis=2)
+    np_img = np.mean(np_img, axis=2)  # 转为灰度图
     affine = affine = np.eye(4)  # 一般png转成nii的affine设成4×4的单位矩阵
 
     nib.save(nib.Nifti1Image(np_img, affine), dst)  # 保存的图像是顺时针旋转90°的

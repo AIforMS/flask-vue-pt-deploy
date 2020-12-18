@@ -8,6 +8,7 @@ import os
 import shutil
 import base64
 import re
+import numpy as np
 
 import logging
 
@@ -25,6 +26,8 @@ from f_app.user_model import Userr
 from f_app.utils import get_seg, get_score, nii_to_png, png_to_nii
 from f_app.auth import basic_auth, token_auth
 
+from seg_net.step2to4_train_validate_inference import step3_TestOrInference
+get_seg = step3_TestOrInference.get_seg
 from config import basedir
 
 upload_path = app.config['UPLOAD_FOLDER']
@@ -71,27 +74,49 @@ def uploader():
         shutil.rmtree(submit_path)  # input
     os.mkdir(submit_path)
 
+    if os.path.exists(result_path):
+        shutil.rmtree(result_path)  # output
+    os.mkdir(result_path)
+
     if request.method == 'POST':
         f = request.files['file']
+        sessionId = request.form['id']  # front-end session id
+        fileType = request.form['fileType']  # img or nii
         # print(f)
         fileName = secure_filename(f.filename)
-        f.save(os.path.join(submit_path, fileName))
+        global filePath
+        filePath = os.path.join(submit_path, fileName)
+
+        global out_path
+        out_path = os.path.join(result_path, f'{sessionId}.png')
+
+        f.save(filePath)
+
         print(f'{fileName} saved to {submit_path}')
 
-        src = os.path.join(submit_path, fileName)
-        dst = os.path.join(upload_path, f"{fileName}.png")
+        if fileType == 'nii':
+            nii_src = filePath
+            global dst
+            dst = os.path.join(upload_path, f"{fileName}.png")
+            img_base64 = nii_to_png(filePath, dst)
+            # get_seg(dst, out_path)
+            return img_base64  # 返回前端
+        else:
+            # contentPath = os.path.join(upload_path, f'{sessionId}.png')
+            # print(contentPath)
+            # imgData = re.sub('^data:image/.+;base64,', '', contentData)
+            imgContent = Image.open(filePath)  # 420 x 420 ?!
+            imgContent = np.asarray(imgContent)
+            print(imgContent.shape)
+            # imgContent.save(contentPath)
+            # nii_src = png_to_nii(contentPath, os.path.join(submit_path, fileName))
         
-        return nii_to_png(src, dst)
     return ''
 
 
 @app.route('/seg', methods=['GET', 'POST'])
 # @login_required
 def seg():
-
-    # if os.path.exists(submit_path):
-    #     shutil.rmtree(submit_path)  # input
-    # os.mkdir(submit_path)
 
     resp = {}  # 返回前端的json数据
 
@@ -102,21 +127,15 @@ def seg():
         fileType = request.form['fileType']  # img or nii
         fileName = request.form['fileName']
 
+        # get_seg(dst, out_path)  # 分割结果保存在 out_path
         if fileType == 'nii':
-            nii_src = os.path.join(submit_path, fileName)
+            get_seg(dst, out_path)
         else:
-            contentPath = os.path.join(upload_path, sessionId, '.png')
-            imgData = re.sub('^data:image/.+;base64,', '', contentData)
-            imgContent = Image.open(BytesIO(base64.b64decode(imgData)))
-            imgContent.save(contentPath)
-            nii_src = png_to_nii(contentPath, os.path.join(submit_path, fileName))
+            get_seg(filePath, out_path)  # 分割结果保存在 out_path
 
-        out_path = os.path.join(result_path, f'{sessionId}.png')  # 仍需判断分割结果是 nii 还是 png 格式
-        seg_out = get_seg(nii_src, out_path)  # 分割结果保存在 seg_out
+        labelArea, labelCoverage, fakeDice = get_score(out_path)
 
-        labelArea, labelCoverage, fakeDice = get_score(seg_out)
-
-        with open(os.path.join(os.path.dirname(__file__), seg_out), 'rb') as f:
+        with open(os.path.join(os.path.dirname(__file__), out_path), 'rb') as f:
             """data表示取得数据的协定名称,image/png是数据类型名称,base64 是数据的编码方法,
                逗号后面是image/png（.png图片）文件的base64编码.
                <img src="data:image/png;base64,iVBORw0KGgoAggg=="/>即可展示图片

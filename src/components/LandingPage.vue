@@ -6,16 +6,21 @@
     <div class="container">
       <div class="section">
         <h3>需要分割的图片</h3>
-        <div class="canvas-wrapper">
-          <drawing-board ref="canvas"
-                         :enabled="!userContent"></drawing-board>
+        <div class="result-container">
+          <div class="hint"
+               v-if="!uploadSrc">
+            Src
+          </div>
+          <img v-if="uploadSrc"
+               :src="uploadSrc"
+               alt="">
         </div>
         <form id="upload-file"
               method="post"
               enctype="multipart/form-data">
           <label for="imageUpload"
                  class="btn">
-            选择文件并提交
+            选择文件
           </label>
           <input type="file"
                  name="file"
@@ -23,7 +28,7 @@
                  id="imageUpload"
                  accept=".png, .jpg, .jpeg, .nii, .nii.gz">
         </form>
-        <div v-if="userContent">
+        <div v-if="uploadSrc">
         <button class="btn"
                 @click="clearCanvas">
             <span>清空</span>
@@ -146,6 +151,7 @@ export default {
       sessionId: "",
       fileName: "",
       fileType: "",
+      uploadSuccess: false,
 
       labelArea: 2,
       labelCoverage: 0.46,
@@ -161,8 +167,7 @@ export default {
       showStyle: true,
       showToggle: false,
       resultSrc: "",
-      resultPix: "",
-      resultStyle: "",
+      uploadSrc: "",
 
       showWaitModal: false,
       modalContent: "正在分割...",
@@ -185,8 +190,9 @@ export default {
 
   methods: {
     clearCanvas() {
-      this.$refs.canvas.clearCanvas();
-      this.userContent = false;
+      // this.$refs.canvas.clearCanvas();
+      this.uploadSrc = '';
+      this.resultSrc = '';
     },
 
     onSelectStyle(id) {
@@ -196,17 +202,17 @@ export default {
 
     submitDrawing() {
       // Retreive canvas drawing
-      var canvas = document.querySelector("#canvas");
-      var context = canvas.getContext("2d");
+      // var canvas = document.querySelector("#canvas");
+      // var context = canvas.getContext("2d");
 
-      var w = canvas.width;
-      var h = canvas.height;
-      var compositeOperation = context.globalCompositeOperation;
-      context.globalCompositeOperation = "destination-over";
-      context.fillStyle = "white";
-      context.fillRect(0, 0, w, h);
+      // var w = canvas.width;
+      // var h = canvas.height;
+      // var compositeOperation = context.globalCompositeOperation;
+      // context.globalCompositeOperation = "destination-over";
+      // context.fillStyle = "white";
+      // context.fillRect(0, 0, w, h);
 
-      var src = canvas.toDataURL("image/png");
+      // var src = canvas.toDataURL("image/png");
       var container = this.$el.querySelector(".result-container");
       container.scrollIntoView({ behavior: "smooth" });
 
@@ -217,7 +223,7 @@ export default {
       styleData.append("fileName", this.fileName);
       styleData.append("fileType", this.fileType);
       if(this.fileType === 'img') {
-        styleData.append("contentData", src);  // png need to be upload
+        styleData.append("contentData", 'img');  // png need to be upload
       } else {
         styleData.append("contentData", 'nii');
       }
@@ -281,24 +287,36 @@ export default {
       uploadData.append("fileType", this.fileType)
       uploadData.append("id", this.sessionId)
 
-      var canvas = document.querySelector("#canvas");
-      var ctx = canvas.getContext("2d");
+      // var canvas = document.querySelector("#canvas");
+      // var ctx = canvas.getContext("2d");
 
-      var w = canvas.width;
-      var h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      // var w = canvas.width;
+      // var h = canvas.height;
+      // ctx.clearRect(0, 0, w, h);
 
-      var img = new Image();
-      img.onload = function() {
-        ctx.drawImage(img, 0, 0, w, h);
-      };
+      // var img = new Image();
+      // img.onload = function() {
+      //   ctx.drawImage(img, 0, 0, w, h);
+      // };
 
       if(this.fileType === 'img') {
         reader.onload = e => {
-          img.src = e.target.result;  // 前端处理的图片的base64编码
+          this.uploadSrc = e.target.result;  // 前端处理的图片的base64编码
         };
         reader.readAsDataURL(files[0]);  // base64编码
         e.target.value = "";
+        axiosDtype({
+          url: "/uploader",
+          method: "POST",
+          data: uploadData,
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+          }).then(response => {
+            this.uploadSuccess = true
+            // img.src = response.data;  // 后端上传的图片的 base64 编码
+            // this.resultSrc = this.resultStyle;
+          });
       } else {
         axiosDtype({
           url: "/uploader",
@@ -308,7 +326,8 @@ export default {
             "Content-Type": "multipart/form-data"
           }
         }).then(response => {
-          img.src = response.data;  // 后端上传的图片的 base64 编码
+          this.uploadSrc = response.data;  // 后端上传的图片的 base64 编码
+          this.uploadSuccess = true
           // this.resultSrc = this.resultStyle;
         });
       }
