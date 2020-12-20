@@ -38,19 +38,6 @@
 
       <div class="section-sub">
         <h3>开始分割</h3>
-        <!-- <div class="image-container">
-          <div class="image-flex">
-            <div v-for="image in styleImages"
-                 :key="image.id"
-                 class="image-item">
-              <image-item :src="image.src"
-                          :id="image.id"
-                          :selected="selectedId"
-                          @clicked="onSelectStyle"></image-item>
-            </div>
-          </div>
-        </div> -->
-
         <button class="btn"
                 :disabled="!userContent"
                 @click="submitDrawing">
@@ -113,8 +100,6 @@
 </template>
 
 <script>
-import DrawingBoard from "./DrawingBoard.vue";
-import ImageItem from "./ImageItem.vue";
 import axios from "axios";
 import Vue from "vue";
 
@@ -176,8 +161,6 @@ export default {
   },
 
   mounted: function() {
-    // this.canvasWidth = document.body.clientWidth / 2;
-    // this.canvasHeight = this.canvasWidth*(3/5);
     this.selectedId = 1;
     this.sessionId =
       "_" +
@@ -201,18 +184,6 @@ export default {
     },
 
     submitDrawing() {
-      // Retreive canvas drawing
-      // var canvas = document.querySelector("#canvas");
-      // var context = canvas.getContext("2d");
-
-      // var w = canvas.width;
-      // var h = canvas.height;
-      // var compositeOperation = context.globalCompositeOperation;
-      // context.globalCompositeOperation = "destination-over";
-      // context.fillStyle = "white";
-      // context.fillRect(0, 0, w, h);
-
-      // var src = canvas.toDataURL("image/png");
       var container = this.$el.querySelector(".result-container");
       container.scrollIntoView({ behavior: "smooth" });
 
@@ -287,18 +258,6 @@ export default {
       uploadData.append("fileType", this.fileType)
       uploadData.append("id", this.sessionId)
 
-      // var canvas = document.querySelector("#canvas");
-      // var ctx = canvas.getContext("2d");
-
-      // var w = canvas.width;
-      // var h = canvas.height;
-      // ctx.clearRect(0, 0, w, h);
-
-      // var img = new Image();
-      // img.onload = function() {
-      //   ctx.drawImage(img, 0, 0, w, h);
-      // };
-
       if(this.fileType === 'img') {
         reader.onload = e => {
           this.uploadSrc = e.target.result;  // 前端处理的图片的base64编码
@@ -314,8 +273,6 @@ export default {
           }
           }).then(response => {
             this.uploadSuccess = true
-            // img.src = response.data;  // 后端上传的图片的 base64 编码
-            // this.resultSrc = this.resultStyle;
           });
       } else {
         axiosDtype({

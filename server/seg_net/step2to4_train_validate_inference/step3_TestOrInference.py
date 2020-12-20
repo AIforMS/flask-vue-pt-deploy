@@ -101,6 +101,16 @@ def preprocess(mask_c1_array_biggest, c1_size=256):
 
 
 def get_seg(src_path, out_path, img_name=None):
+    """处理的逻辑:
+    1)读取图片,有mask则读取mask
+    2)图片预处理,比如去黑边的操作,保留去黑边的坐标index1
+    3)cascade1,使用TTA,预测mask(后续可以加后处理,如cascadePSP)
+    4)预测mask的roi,上下左右随机外扩不同像素,相当于一种tta,然后储存tta外扩像素细节到一个list,为index2
+    5)cascade2,使用TTA,在抠出图基础上(resize到256)进行预测,之后还原大小,(后续可以加后处理,如cascadePSP)
+    6)根据index2,还原分割结果到原位置,再根据index1,还原到最初位置
+    7)和mask计算指标
+    9)保存预测图片到指定文件夹
+    """
     saveas = 'mask' # prob概率图形式保存,mask二值图形式保存
     mask_path = None
 
@@ -279,16 +289,7 @@ def get_seg(src_path, out_path, img_name=None):
 
 
 if __name__ == '__main__':
-    """处理的逻辑:
-    1)读取图片,有mask则读取mask
-    2)图片预处理,比如去黑边的操作,保留去黑边的坐标index1
-    3)cascade1,使用TTA,预测mask(后续可以加后处理,如cascadePSP)
-    4)预测mask的roi,上下左右随机外扩不同像素,相当于一种tta,然后储存tta外扩像素细节到一个list,为index2
-    5)cascade2,使用TTA,在抠出图基础上(resize到256)进行预测,之后还原大小,(后续可以加后处理,如cascadePSP)
-    6)根据index2,还原分割结果到原位置,再根据index1,还原到最初位置
-    7)和mask计算指标
-    9)保存预测图片到指定文件夹
-    """
+
     img_path = glob.glob(r"../output/*")  # list
     img_name = os.listdir(r'../input/')[0]
     img_name = img_name[: img_name.index('.')]
