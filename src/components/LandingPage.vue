@@ -115,24 +115,13 @@ export default {
   name: "LandingPage",
 
   components: {
-    DrawingBoard,
-    ImageItem
+    // DrawingBoard,
+    // ImageItem
   },
 
   data() {
     return {
       msg: "Welcome",
-      // styleImages: [
-      //   { id: "1", src: require("@/assets/thumbs/1.jpg") },
-      //   { id: "2", src: require("@/assets/thumbs/2.jpg") },
-      //   { id: "3", src: require("@/assets/thumbs/3.jpg") },
-      //   { id: "4", src: require("@/assets/thumbs/4.jpg") },
-      //   { id: "5", src: require("@/assets/thumbs/5.jpg") },
-      //   { id: "6", src: require("@/assets/thumbs/6.jpg") },
-      //   { id: "7", src: require("@/assets/thumbs/7.jpg") },
-      //   { id: "8", src: require("@/assets/thumbs/8.jpg") },
-      //   { id: "9", src: require("@/assets/thumbs/9.jpg") }
-      // ],
       sessionId: "",
       fileName: "",
       fileType: "",
