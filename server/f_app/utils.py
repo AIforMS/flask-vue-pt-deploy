@@ -31,7 +31,7 @@ def clear_dir(dir_list, time_step=3600):
             time_now = time.time()
             last = time_now - f_mtime
             msg = "dleted! " if last > time_step else "retain. "
-            if mag == "dleted! ":
+            if msg == "dleted! ":
                 print(f"File '{file_path}' {msg} last for {last // 3600} hours")
             if last > time_step:
                 os.remove(file_path)
