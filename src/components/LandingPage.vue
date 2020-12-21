@@ -154,11 +154,6 @@ export default {
 
   mounted: function() {
     this.selectedId = 1;
-    this.sessionId =
-      "_" +
-      Math.random()
-        .toString(36)
-        .substr(2, 9);
 
     let that = this;
   },
@@ -222,6 +217,12 @@ export default {
     },
 
     contentUpload(e) {
+      this.sessionId =
+      "_" +
+      Math.random()
+        .toString(36)
+        .substr(2, 9);
+
       var files = e.target.files || e.dataTransfer.files;
       if (!files.length) return;
       console.log(files)

@@ -23,16 +23,24 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from f_app import app, db
 from f_app.user_model import Userr
-from f_app.utils import get_seg, get_score, nii_to_png, png_to_nii
+from f_app.utils import get_seg, get_score, nii_to_png, png_to_nii, clear_dir_async, \
+    upload_path, submit_path, result_path
 from f_app.auth import basic_auth, token_auth
 
 from seg_net.step2to4_train_validate_inference import step3_TestOrInference
 get_seg = step3_TestOrInference.get_seg
-from config import basedir
 
-upload_path = app.config['UPLOAD_FOLDER']
-submit_path = app.config['SUBMIT_FOLDER']
-result_path = app.config['RESULT_FOLDER']
+
+# 由于这些文件夹必须要存在，所以不能异步创建
+if not os.path.exists(upload_path):
+    # shutil.rmtree(upload_path)  # upload
+    os.mkdir(upload_path)
+
+if not os.path.exists(submit_path):
+    os.mkdir(submit_path)  # input
+
+if not os.path.exists(result_path):
+    os.mkdir(result_path)  # output
 
 
 @app.route('/', methods=['GET'])
@@ -65,31 +73,23 @@ def uploader():
     save: nii
     return: img base64 encode
     """
-
-    if os.path.exists(upload_path):
-        shutil.rmtree(upload_path)  # upload
-    os.mkdir(upload_path)
-
-    if os.path.exists(submit_path):
-        shutil.rmtree(submit_path)  # input
-    os.mkdir(submit_path)
-
-    if os.path.exists(result_path):
-        shutil.rmtree(result_path)  # output
-    os.mkdir(result_path)
+    clear_dir_async()  # 异步清理相关文件夹
 
     if request.method == 'POST':
         f = request.files['file']
         sessionId = request.form['id']  # front-end session id
         fileType = request.form['fileType']  # img or nii
-        # print(f)
         fileName = secure_filename(f.filename)
+        print(f"fileName: {fileName}")
+        fileSuffix = fileName[fileName.find('.'):]
+        print(f"fileType: {fileSuffix}")
+
         global filePath
-        filePath = os.path.join(submit_path, fileName)
-        print(filePath)
+        filePath = os.path.join(submit_path, f'{sessionId}{fileSuffix}')
 
         global out_path
         out_path = os.path.join(result_path, f'{sessionId}.png')
+        print(f"out_path: {out_path}")
 
         f.save(filePath)
 
@@ -98,19 +98,14 @@ def uploader():
         if fileType == 'nii':
             nii_src = filePath
             global dst
-            dst = os.path.join(upload_path, f"{fileName}.png")
+            dst = os.path.join(upload_path, f"{sessionId}.png")
             img_base64 = nii_to_png(filePath, dst)
             # get_seg(dst, out_path)
             return img_base64  # 返回前端
         else:
-            # contentPath = os.path.join(upload_path, f'{sessionId}.png')
-            # print(contentPath)
-            # imgData = re.sub('^data:image/.+;base64,', '', contentData)
             imgContent = Image.open(filePath)  # 420 x 420 ?!
             imgContent = np.asarray(imgContent)
             print(imgContent.shape)
-            # imgContent.save(contentPath)
-            # nii_src = png_to_nii(contentPath, os.path.join(submit_path, fileName))
         
     return ''
 
@@ -122,18 +117,19 @@ def seg():
     resp = {}  # 返回前端的json数据
 
     if request.method == 'POST':
-        sessionId = request.form['id']  # front-end session id
+        # sessionId = request.form['id']  # front-end session id
         userContent = request.form['userContent']  # bool
         contentData = request.form['contentData']  # img data base64 src, if nii, none
         fileType = request.form['fileType']  # img or nii
-        fileName = request.form['fileName']
 
         # get_seg(dst, out_path)  # 分割结果保存在 out_path
-        if fileType == 'nii':
-            get_seg(dst, out_path)
-        else:
-            get_seg(filePath, out_path)  # 分割结果保存在 out_path
-
+        if not os.path.isfile(out_path):
+            print("FALSE")
+            if fileType == 'nii':
+                get_seg(dst, out_path)
+            else:
+                get_seg(filePath, out_path)  # 分割结果保存在 out_path
+        print("TRUE")
         labelArea, labelCoverage, fakeDice = get_score(out_path)
 
         with open(os.path.join(os.path.dirname(__file__), out_path), 'rb') as f:

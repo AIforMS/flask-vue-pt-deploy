@@ -1,11 +1,46 @@
 import os
+import time
 import shutil
+from threading import Thread
 import base64
+import hashlib
+
 import numpy as np
 import nibabel as nib
 from PIL import Image
 
-# from config import basedir
+if not __name__ == '__main__':
+    from config import Config
+
+    upload_path = Config.UPLOAD_FOLDER
+    submit_path = Config.SUBMIT_FOLDER
+    result_path = Config.RESULT_FOLDER
+
+    dir_list = [upload_path, submit_path, result_path]
+# dir_list = (r'D:\code_sources\from_github\lese\test', r'D:\code_sources\from_github\lese\components')
+
+def clear_dir(dir_list, time_step=3600):
+    """
+    异步清理文件夹，将一小时前新增的文件清理掉，同时，新增的文件名使用session id命名。
+    这个函数通过时间戳判断，异步清理旧文件
+    """
+    for dir in dir_list:
+        for file in os.listdir(dir):
+            file_path = os.path.join(dir, file)
+            f_mtime = os.path.getmtime(file_path)
+            time_now = time.time()
+            last = time_now - f_mtime
+            msg = "dleted! " if last > time_step else "retain. "
+            if mag == "dleted! ":
+                print(f"File '{file_path}' {msg} last for {last // 3600} hours")
+            if last > time_step:
+                os.remove(file_path)
+
+def clear_dir_async():
+    Thread(target=clear_dir, kwargs={'dir_list': dir_list}).start()
+
+def test_async():
+    clear_dir_async()
 
 
 def nii_to_png(src, dst):
@@ -75,11 +110,26 @@ def get_score(out_path):
     """
     return 1, 2, 3
 
+ 
+def get_md5(url):
+    """
+    由于hash不处理unicode编码的字符串（python3默认字符串是unicode）
+        所以这里判断是否字符串，如果是则进行转码
+        初始化md5、将url进行加密、然后返回加密字串
+    """
+    if isinstance(url, str):
+        url = url.encode("utf-8")
+    md = hashlib.md5()
+    md.update(url)
+    return md.hexdigest()
+
 
 if __name__ == '__main__':
     basedir = r'D:/code_sources/from_github/Flask-Vue-Deploy/server'
     src = os.path.join(basedir, 'seg_net/input/FraserRiver.jpg')
     dst = os.path.join(basedir, 'seg_net/upload/FraserRiver.nii')
+    print(get_md5("_vx1wbg3qj"))
+    # test_async()
     # png_to_nii(src, dst)
     # upload_path = os.path.join(basedir, 'seg_net/upload')
     # if os.path.exists(dst):
