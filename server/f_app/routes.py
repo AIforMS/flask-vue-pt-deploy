@@ -86,6 +86,7 @@ def uploader():
         fileName = secure_filename(f.filename)
         global filePath
         filePath = os.path.join(submit_path, fileName)
+        print(filePath)
 
         global out_path
         out_path = os.path.join(result_path, f'{sessionId}.png')

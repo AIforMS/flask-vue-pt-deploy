@@ -95,7 +95,7 @@ export default {
         //     "Content-Type": "multipart/form-data"
         //     }
         // })
-        const path = 'http://localhost:5002/tokens'
+        const path = 'http://127.0.0.1:5002/tokens'
             // axios 实现Basic Auth需要在config中设置 auth 这个属性即可
         
         axios.post(path, {}, {

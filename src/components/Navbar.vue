@@ -20,8 +20,10 @@
           <li class="nav-item">
             <!-- <a class="nav-link disabled" href="#">工具箱</a> -->
             <select class="selectpicker form-control" id="select">
-                <option value="null" disabled selected hidden>工具箱</option>
-                <option value="seg">分割</option>
+                <option disabled selected hidden>工具箱</option>
+                <option value="seg">
+                  <router-link to="/" class="nav-link">分割</router-link>
+                </option>
                 <!-- <option value="reg">配准</option>
                 <option value="fus">融合</option>
                 <option value="cla">分类</option> -->
