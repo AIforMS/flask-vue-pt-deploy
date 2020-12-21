@@ -82,22 +82,12 @@ export default {
         return false
         }
 
-        //   var loginData = new FormData()
-        //   loginData.append('username', this.loginForm.username)
-        //   loginData.append('passward', this.loginForm.password)
+        const path = 
+          process.env.NODE_ENV === "development" 
+            ? 'http://127.0.0.1:5002/tokens' 
+            : 'http://seg.shbang.ink:5002/tokens'
 
-        //   const axiosLogin = axios.create({baseURL: "http://localhost:5002"})
-        //     axiosLogin({
-        //     url: '/login',
-        //     method: 'POST',
-        //     data: loginData,
-        //     headers: {
-        //     "Content-Type": "multipart/form-data"
-        //     }
-        // })
-        const path = 'http://127.0.0.1:5002/tokens'
-            // axios 实现Basic Auth需要在config中设置 auth 这个属性即可
-        
+        // axios 实现Basic Auth需要在config中设置 auth 这个属性即可
         axios.post(path, {}, {
             auth: {
             'username': this.loginForm.username,

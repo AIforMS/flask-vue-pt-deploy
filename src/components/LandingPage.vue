@@ -107,9 +107,12 @@ import Vue from "vue";
 const axiosStyle =
   process.env.NODE_ENV === "development"
     ? axios.create({ baseURL: "http://127.0.0.1:5002" })
-    : axios.create({ baseURL: "http://127.0.0.1:5002" });
+    : axios.create({ baseURL: "http://seg.shbang.ink:5002" });
 
-const axiosDtype = axios.create({ baseURL: "http://127.0.0.1:5002" })
+const axiosDtype = 
+  process.env.NODE_ENV === "development" 
+    ? axios.create({ baseURL: "http://127.0.0.1:5002" })
+    : axios.create({ baseURL: "http://seg.shbang.ink:5002" });
 
 export default {
   name: "LandingPage",
