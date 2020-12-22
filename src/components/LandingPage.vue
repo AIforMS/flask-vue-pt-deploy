@@ -1,7 +1,7 @@
 <template>
   <div id="wrapper">
     <h1>
-      nnUNet 在线分割
+      2D医学图像分割
     </h1>
     <div class="container">
       <div class="section">
@@ -55,7 +55,7 @@
               <td>{{labelCoverage}}</td>
             </tr>
             <tr class="pure-table-odd">
-              <th>假的DICE</th>
+              <th>*DICE*</th>
             </tr>
             <tr class="pure-table-odd">
               <td>{{diceScore}}</td>
@@ -75,7 +75,7 @@
         <h3>分割结果</h3>
         <div class="result-container">
           <div class="hint"
-               v-if="!resultSrc">
+               v-if="!uploadSrc">
             Seg
           </div>
 

@@ -9,6 +9,10 @@
 
     <div class="spacer"></div>
     <footer>
+      <span class="alert">** 可以分割 2D 的 png、nii 以及 nii.gz 格式的 *腮腺或甲状腺* 的超声（US）医学图像 **</span>
+      <br>
+      <span class="alert"></span>
+      <!-- <br> -->
       Made by Bang
     </footer>
   </div>
@@ -93,5 +97,9 @@ footer {
   color: #9fa9aa;
   font-weight: 200;
   font-size: 1rem;
+}
+.alert {
+  color: #000000;
+  font-weight: 400;
 }
 </style>

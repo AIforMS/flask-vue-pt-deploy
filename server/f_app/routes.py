@@ -84,23 +84,19 @@ def uploader():
         fileSuffix = fileName[fileName.find('.'):]
         print(f"fileType: {fileSuffix}")
 
-        global filePath
         filePath = os.path.join(submit_path, f'{sessionId}{fileSuffix}')
 
-        global out_path
         out_path = os.path.join(result_path, f'{sessionId}.png')
         print(f"out_path: {out_path}")
 
         f.save(filePath)
 
-        print(f'{fileName} saved to {submit_path}')
+        print(f'{fileName} saved to {filePath}')
 
-        if fileType == 'nii':
+        if fileType in ['nii', 'nii.gz', 'gz']:
             nii_src = filePath
-            global dst
             dst = os.path.join(upload_path, f"{sessionId}.png")
             img_base64 = nii_to_png(filePath, dst)
-            # get_seg(dst, out_path)
             return img_base64  # 返回前端
         else:
             imgContent = Image.open(filePath)  # 420 x 420 ?!
@@ -117,16 +113,18 @@ def seg():
     resp = {}  # 返回前端的json数据
 
     if request.method == 'POST':
-        # sessionId = request.form['id']  # front-end session id
+        sessionId = request.form['id']  # front-end session id
         userContent = request.form['userContent']  # bool
         contentData = request.form['contentData']  # img data base64 src, if nii, none
-        fileType = request.form['fileType']  # img or nii
+        fileType = request.form['fileType']  # img or nii or gz
 
-        # get_seg(dst, out_path)  # 分割结果保存在 out_path
+        out_path = os.path.join(result_path, f'{sessionId}.png')
+        filePath = os.path.join(submit_path, f'{sessionId}.png')
+
         if not os.path.isfile(out_path):
             print("FALSE")
-            if fileType == 'nii':
-                get_seg(dst, out_path)
+            if fileType in ['nii', 'nii.gz', 'gz']:
+                get_seg(os.path.join(upload_path, f"{sessionId}.png"), out_path)
             else:
                 get_seg(filePath, out_path)  # 分割结果保存在 out_path
         print("TRUE")
