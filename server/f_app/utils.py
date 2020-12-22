@@ -91,15 +91,6 @@ def png_to_nii(src, dst):
     return dst
 
 
-def get_seg(content_path, out_path, *args):
-    """
-    todo: 通过命令行指定原图和分割标签的输出路径
-    return:
-      直接保存分割标签到文件夹，读取后base64编码再发送到前端
-    """
-    return r'D:\code_sources\from_github\Flask-Vue-Deploy\server\seg_net\output\Pancreas_002_0000.nii.gz.png'
-
-
 def get_score(out_path):
     """
     todo: 得到分割图片后计算指标
@@ -108,7 +99,11 @@ def get_score(out_path):
       :labelCoverage: 分割标签覆盖率
       :fakeDice: 银dice
     """
-    return 1, 2, 3
+    img = np.asarray(Image.open(out_path))
+    seg_area = np.sum(img > 0)
+    labelCoverage = round(seg_area / img.size, 3)
+    labelCoverage = f"{labelCoverage * 100}%"
+    return 1, labelCoverage, 3
 
  
 def get_md5(url):

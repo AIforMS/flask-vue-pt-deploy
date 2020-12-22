@@ -23,7 +23,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from f_app import app, db
 from f_app.user_model import Userr
-from f_app.utils import get_seg, get_score, nii_to_png, png_to_nii, clear_dir_async, \
+from f_app.utils import get_score, nii_to_png, png_to_nii, clear_dir_async, \
     upload_path, submit_path, result_path
 from f_app.auth import basic_auth, token_auth
 
