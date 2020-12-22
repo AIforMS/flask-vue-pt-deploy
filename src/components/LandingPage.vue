@@ -38,13 +38,7 @@
 
       <div class="section-sub">
         <h3>开始分割</h3>
-        <button class="btn"
-                :disabled="!userContent"
-                @click="submitDrawing">
-          <span class="submit"></span>
-          <span>开始分割</span>
-        </button>
-
+ 
         <div class="seg-table">
           <table class="pure-table">
             <caption>指标</caption>
@@ -63,11 +57,18 @@
             <tr class="pure-table-odd">
               <th>假的DICE</th>
             </tr>
-            <tr class="pure-table-odd" v-if="diceScore">
+            <tr class="pure-table-odd">
               <td>{{diceScore}}</td>
             </tr>
           </table>
         </div>
+
+        <button class="btn"
+          :disabled="!userContent"
+          @click="submitDrawing">
+          <span class="submit"></span>
+          <span>开始分割</span>
+        </button>
       </div>
 
       <div class="section">
@@ -77,12 +78,19 @@
                v-if="!resultSrc">
             Seg
           </div>
-          <img v-if="resultSrc"
-               :src="resultSrc"
-               alt="">
+
+          <span v-if="resultSrc" class="opacity-style result-container">
+            <img :src="resultSrc" alt="resultSrc">
+          </span>
+          <img v-if="resultSrc" :src="uploadSrc" alt="uploadSrc">
+          
         </div>
-        <div v-if="resultSrc"
-             class="hint">右键图片可以保存到本地</div>
+
+        <button class="btn"
+              :disabled="!resultSrc"
+              @click="downloadResult(fileName)">
+          <span>保存标签</span>
+        </button>
       </div>
     </div>
 
@@ -130,9 +138,9 @@ export default {
       fileType: "",
       uploadSuccess: false,
 
-      labelArea: 2,
-      labelCoverage: 0.46,
-      diceScore: 1,
+      labelArea: 0,
+      labelCoverage: '0%',
+      diceScore: 0,
 
       userContent: false,
       userStyle: false,
@@ -159,11 +167,42 @@ export default {
   },
 
   methods: {
+    downloadResult(name) {
+      var image = new Image()
+      image.setAttribute('crossOrigin', 'anonymous')
+      image.onload = function () {
+        var canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+
+        var context = canvas.getContext('2d')
+        context.drawImage(image, 0, 0, image.width, image.height)
+        var url = canvas.toDataURL('image/png')
+
+        // 生成一个a元素
+        var a = document.createElement('a')
+        // 创建一个单击事件
+        var event = new MouseEvent('click')
+
+        // 将a的download属性设置为我们想要下载的图片名称，若name不存在则使用‘下载图片名称’作为默认名称
+        a.download = name || 'seg_result_label'
+        // 将生成的URL设置为a.href属性
+        a.href = url
+
+        // 触发a的单击事件
+        a.dispatchEvent(event)
+      }
+      image.src = this.resultSrc
+    },
+
     clearCanvas() {
       // this.$refs.canvas.clearCanvas();
       this.uploadSrc = '';
       this.userContent = '';
       this.resultSrc = '';
+      this.labelArea = 0
+      this.labelCoverage = '0%'
+      this.diceScore = 0
     },
 
     onSelectStyle(id) {
@@ -300,6 +339,14 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.opacity-style {
+  filter:alpha(opacity=50);  
+  -moz-opacity: 0.5;  
+  -khtml-opacity: 0.5;  
+  opacity: 0.5;
+  position:absolute;
+}
+
 #wrapper h1 {
   margin: 1rem 0rem;
 }

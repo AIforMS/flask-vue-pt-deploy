@@ -101,8 +101,9 @@ def get_score(out_path):
     """
     img = np.asarray(Image.open(out_path))
     seg_area = np.sum(img > 0)
-    labelCoverage = round(seg_area / img.size, 3)
-    labelCoverage = f"{labelCoverage * 100}%"
+    labelCoverage = round(seg_area / img.size * 100, 1)
+    labelCoverage = f"{labelCoverage}%"
+    print(labelCoverage)
     return 1, labelCoverage, 3
 
  
