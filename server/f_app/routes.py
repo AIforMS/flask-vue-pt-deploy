@@ -5,6 +5,7 @@ from __future__ import print_function
 # coding=utf-8
 
 import os
+import glob
 import shutil
 import base64
 import re
@@ -119,7 +120,9 @@ def seg():
         fileType = request.form['fileType']  # img or nii or gz
 
         out_path = os.path.join(result_path, f'{sessionId}.png')
-        filePath = os.path.join(submit_path, f'{sessionId}.png')
+        filePath = os.path.join(submit_path, sessionId)
+        filePath = glob.glob(f"{filePath}.*")[0]
+        print(f"img file path: {filePath}")
 
         if not os.path.isfile(out_path):
             print("FALSE")
