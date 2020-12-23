@@ -24,7 +24,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from f_app import app, db
 from f_app.user_model import Userr
-from f_app.utils import get_score, nii_to_png, png_to_nii, clear_dir_async, \
+from f_app.utils import get_score, nii_to_png, png_to_nii, clear_dir_async, png_to_gray, \
     upload_path, submit_path, result_path
 from f_app.auth import basic_auth, token_auth
 
@@ -100,9 +100,7 @@ def uploader():
             img_base64 = nii_to_png(filePath, dst)
             return img_base64  # 返回前端
         else:
-            imgContent = Image.open(filePath)  # 420 x 420 ?!
-            imgContent = np.asarray(imgContent)
-            print(imgContent.shape)
+            png_to_gray(filePath, filePath)  # png转成单通道灰度图, nii已经转了
         
     return ''
 

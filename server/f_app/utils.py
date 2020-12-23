@@ -70,6 +70,14 @@ def nii_to_png(src, dst):
         return "Encode to base64 failed"
 
 
+def png_to_gray(src, dst):
+    """
+    银标准只接收单通道灰度图
+    """
+    img = Image.open(src).convert("L")
+    img.save(dst)
+
+
 def png_to_nii(src, dst):
     """
     将 png 图片保存成 nii 格式，以便分割
