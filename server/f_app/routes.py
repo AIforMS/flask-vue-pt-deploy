@@ -18,14 +18,14 @@ from PIL import Image
 
 # Flask utils
 from flask import request, jsonify, redirect, url_for, g
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename  # 对中文名不支持，在utils中修改了源码
 from gevent.pywsgi import WSGIServer
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from f_app import app, db
 from f_app.user_model import Userr
 from f_app.utils import get_score, nii_to_png, png_to_nii, clear_dir_async, png_to_gray, \
-    upload_path, submit_path, result_path
+    secure_filename, upload_path, submit_path, result_path
 from f_app.auth import basic_auth, token_auth
 
 from seg_net.step2to4_train_validate_inference import step3_TestOrInference
