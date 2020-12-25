@@ -61,6 +61,9 @@
 
 <script>
 import store from '../store.js'
+// 为了 collapse 能够生效，引入以下：
+import "../static/jquery-3.5.1.slim.min.js"
+import "../static/bootstrap.bundle.min.js"
 
 export default {
   name: 'Navbar',  //this is the name of the component
