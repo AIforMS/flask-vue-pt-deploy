@@ -198,16 +198,11 @@ export default {
     clearCanvas() {
       // this.$refs.canvas.clearCanvas();
       this.uploadSrc = '';
-      this.userContent = '';
+      this.userContent = false;
       this.resultSrc = '';
       this.labelArea = 0
       this.labelCoverage = '0%'
       this.diceScore = 0
-    },
-
-    onSelectStyle(id) {
-      this.selectedId = id;
-      this.submitDisable = false;
     },
 
     submitDrawing() {
@@ -296,7 +291,6 @@ export default {
           this.uploadSrc = e.target.result;  // 前端处理的图片的base64编码
         };
         reader.readAsDataURL(files[0]);  // base64编码
-        e.target.value = "";
         axiosDtype({
           url: "/uploader",
           method: "POST",
@@ -321,6 +315,7 @@ export default {
           // this.resultSrc = this.resultStyle;
         });
       }
+      e.target.value = "";  // 清空文件，否则会无法打开新文件
       this.userContent = true;
     },
 
